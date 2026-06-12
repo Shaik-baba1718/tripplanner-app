@@ -1,3 +1,4 @@
+
 buildscript {
     ext {
         buildToolsVersion = "36.0.0"
@@ -12,9 +13,19 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("com.android.tools.build:gradle")
+        classpath("com.android.tools.build:gradle:8.8.2")
         classpath("com.facebook.react:react-native-gradle-plugin")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
+    }
+}
+
+allprojects {
+    repositories {
+        mavenCentral()
+        google()
+        jcenter()
+        maven { url "https://www.jitpack.io" }
+        maven { url "https://s3.ap-south-1.amazonaws.com/razorpay-m2" }
     }
 }
 

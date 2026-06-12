@@ -35,14 +35,17 @@ import {
   Trash2,
   Circle,
   CheckCircle,
+  Images,
+  Camera,
 } from "lucide-react-native";
 import { Calendar } from "react-native-calendars";
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Contacts from "react-native-contacts";
 import { FONTS } from "../../global";
-
+import { PermissionsAndroid, Platform } from 'react-native';
 const TripDetailsScreen = ({ navigation, route }) => {
+
   const editTrip = route?.params?.trip || null;
   const editIndex = route?.params?.tripIndex ?? null;
   const isEditMode = !!editTrip;
@@ -299,10 +302,28 @@ const removeVehicle = async (vehicleId) => {
 };
 
  // Open camera directly
-const openCamera = () => {
+const openCamera = async () => {
+  // Request camera permission for Android
+  if (Platform.OS === 'android') {
+    const granted = await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.CAMERA,
+      {
+        title: "Camera Permission",
+        message: "App needs camera access to take photos",
+        buttonNeutral: "Ask Me Later",
+        buttonNegative: "Cancel",
+        buttonPositive: "OK"
+      }
+    );
+    if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+      return;
+    }
+  }
+
   launchCamera({ mediaType: "photo", quality: 1 }, (response) => {
-    if (response.didCancel) return;
-    if (response.assets && response.assets.length > 0) {
+    if (response.didCancel) {
+      return;
+    } else if (response.assets && response.assets.length > 0) {
       setTripImage(response.assets[0].uri);
     }
   });
@@ -418,20 +439,20 @@ const openGallery = () => {
     setShowDestResults(text.length > 0);
     if (text === "") setDestination("");
   };
+return (
+  <View style={{ backgroundColor: "#fff", flex: 1 }}>
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <ArrowLeft color="#341649" size={22} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>{isEditMode ? "Edit Trip" : "New Trip"}</Text>
+      </View>
 
-  return (
-    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{paddingBottom:80,backgroundColor:"#fff"}}>
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <ArrowLeft color="#341649" size={22} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>{isEditMode ? "Edit Trip" : "New Trip"}</Text>
-        </View>
+      <Text style={styles.trip}>TRIP DETAILS</Text>
+      <Text style={styles.sectionTitle}>Choose Destination</Text>
 
-        <Text style={styles.trip}>TRIP DETAILS</Text>
-        <Text style={styles.sectionTitle}>Choose Destination</Text>
-
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ backgroundColor: "#fff", paddingBottom: 20 }}>
         <View style={styles.box}>
           <View style={styles.inner}>
             <View style={styles.column}>
@@ -461,8 +482,7 @@ const openGallery = () => {
 
         {showFromResults && fromSearchQuery.length > 0 && (
           <View style={styles.searchResultsContainer}>
-            <ScrollView style={{ maxHeight: 100}}  contentContainerStyle={{ flexGrow: 1 }}
-                                              showsVerticalScrollIndicator={true}>
+            <ScrollView style={{ maxHeight: 100 }} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={true}>
               {filteredFromLocations.map((item, index) => (
                 <TouchableOpacity
                   key={index}
@@ -482,8 +502,7 @@ const openGallery = () => {
 
         {showDestResults && destSearchQuery.length > 0 && (
           <View style={styles.searchResultsContainer}>
-            <ScrollView style={{ maxHeight: 100 }}    contentContainerStyle={{ flexGrow: 1 }}
-                                                      showsVerticalScrollIndicator={true}>
+            <ScrollView style={{ maxHeight: 100 }} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={true}>
               {filteredDestLocations.map((item, index) => (
                 <TouchableOpacity
                   key={index}
@@ -526,7 +545,7 @@ const openGallery = () => {
         </Text>
 
         {(selected === "car" || selected === "bike") && (
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.commonBox}
             onPress={() => setShowVehicleModal(true)}
             activeOpacity={0.7}
@@ -582,15 +601,15 @@ const openGallery = () => {
         )}
 
         <Text style={styles.subTitle}>Trip Date Range</Text>
-        <TouchableOpacity 
-          style={styles.commonBox} 
-          onPress={() => { 
+        <TouchableOpacity
+          style={styles.commonBox}
+          onPress={() => {
             if (!fromDate || (fromDate && toDate)) {
               setSelectedMode("from");
             } else if (fromDate && !toDate) {
               setSelectedMode("to");
             }
-            setShowCalendar(true); 
+            setShowCalendar(true);
           }}
         >
           <Text style={combinedDate !== "Select Date Range" ? styles.dateText : styles.placeholderText}>
@@ -620,66 +639,47 @@ const openGallery = () => {
           />
         </View>
 
-       
-<Text style={styles.subTitle}>Trip Image</Text>
-<TouchableOpacity style={styles.imageUploadBox} onPress={() => setShowImageOptions(true)}>
-  {tripImage ? (
-    <Image source={{ uri: tripImage }} style={styles.uploadedImage} />
-  ) : (
-    <>
-      <ImageIcon size={26} color="#999" />
-      <Text style={{ marginTop: 8, color: "#999" }}>Upload Image</Text>
-    </>
-  )}
-</TouchableOpacity>
-<Modal
+        <Text style={styles.subTitle}>Trip Image</Text>
+        <TouchableOpacity style={styles.imageUploadBox} onPress={() => setShowImageOptions(true)}>
+          {tripImage ? (
+            <Image source={{ uri: tripImage }} style={styles.uploadedImage} />
+          ) : (
+            <>
+              <ImageIcon size={26} color="#999" />
+              <Text style={{ marginTop: 8, color: "#999" }}>Upload Image</Text>
+            </>
+          )}
+        </TouchableOpacity>
+        <Modal
   animationType="slide"
   transparent={true}
   visible={showImageOptions}
   onRequestClose={() => setShowImageOptions(false)}
 >
-  <TouchableOpacity 
-    style={{flex:1}} 
-     
-    onPress={() => setShowImageOptions(false)}
-  >
-    <View style={styles.imageOptionsContainer}>
-      <View style={styles.imageOptionsCard}>
-        <TouchableOpacity 
-          style={styles.imageOption}
-          onPress={() => {
-            setShowImageOptions(false);
-            openCamera();
-          }}
-        >
-          <Text style={styles.imageOptionText}>📷 Take Photo</Text>
-        </TouchableOpacity>
-        
-        <View style={styles.optionDivider} />
-        
-        <TouchableOpacity 
-          style={styles.imageOption}
-          onPress={() => {
-            setShowImageOptions(false);
-            openGallery();
-          }}
-        >
-          <Text style={styles.imageOptionText}>🖼️ Choose from Gallery</Text>
-        </TouchableOpacity>
-        
-        <View style={styles.optionDivider} />
-        
-        <TouchableOpacity 
-          style={styles.imageOption}
-          onPress={() => setShowImageOptions(false)}
-        >
-          <Text style={styles.cancelOptionText}>Cancel</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  </TouchableOpacity>
-</Modal>
+<View style={{ flex:1, justifyContent: "flex-end" }}>
+  <View style={{ backgroundColor: "#c9c0c0", borderRadius: 20, width: "100%", flexDirection: "row", padding: 20, alignItems: "center", justifyContent: "space-around",height:verticalScale(150) }}>
+    <TouchableOpacity 
+      onPress={() => {
+        setShowImageOptions(false);
+        openCamera();
+      }}
+    >
+      <Camera size={50} color={"#be2323"} />
+    </TouchableOpacity>
 
+    <TouchableOpacity 
+      onPress={() => {
+        setShowImageOptions(false);
+        openGallery();
+      }}
+    >
+      <Images size={50} color={"#be2323"} />
+    </TouchableOpacity>
+  </View>
+</View>
+   
+
+</Modal>
 
         <View style={{ flexDirection: "row", alignItems: "center", flexWrap: "wrap", marginTop: 10 }}>
           {teamMembers.map((member, index) => (
@@ -726,7 +726,7 @@ const openGallery = () => {
         <TouchableOpacity onPress={saveTripData} style={styles.saveBtn}>
           <Text style={{ color: "#FFF" }}>{isEditMode ? "Update Trip" : "Create Trip"}</Text>
         </TouchableOpacity>
-      </View>
+      </ScrollView>
 
       {/* Calendar Modal */}
       <Modal animationType="slide" transparent={true} visible={showCalendar} onRequestClose={() => setShowCalendar(false)}>
@@ -776,33 +776,33 @@ const openGallery = () => {
             {savedVehicles.length > 0 && (
               <>
                 <Text style={styles.savedVehiclesTitle}>Your Vehicles</Text>
-               {savedVehicles.map((vehicle) => (
-  <View key={vehicle.id} style={styles.savedVehicleItem}>
-    <View style={styles.savedVehicleSelect}>
-      <TouchableOpacity 
-        style={styles.savedVehicleRadio}
-        onPress={() => {
-          setVehicleNumber(vehicle.number);
-          setSelectedVehicleId(vehicle.id);
-          setShowVehicleModal(false);
-        }}
-      >
-        {selectedVehicleId === vehicle.id ? (
-          <CheckCircle size={18} color="#f08f10" />
-        ) : (
-          <Circle size={18} color="#999" />
-        )}
-      </TouchableOpacity>
-      <Text style={styles.savedVehicleNumber}>{vehicle.number}</Text>
-    </View>
-    <TouchableOpacity 
-      style={styles.deleteVehicleBtn}
-      onPress={() => removeVehicle(vehicle.id)}
-    >
-      <Trash2 size={18} color="#ff4444" />
-    </TouchableOpacity>
-  </View>
-))}
+                {savedVehicles.map((vehicle) => (
+                  <View key={vehicle.id} style={styles.savedVehicleItem}>
+                    <View style={styles.savedVehicleSelect}>
+                      <TouchableOpacity
+                        style={styles.savedVehicleRadio}
+                        onPress={() => {
+                          setVehicleNumber(vehicle.number);
+                          setSelectedVehicleId(vehicle.id);
+                          setShowVehicleModal(false);
+                        }}
+                      >
+                        {selectedVehicleId === vehicle.id ? (
+                          <CheckCircle size={18} color="#f08f10" />
+                        ) : (
+                          <Circle size={18} color="#999" />
+                        )}
+                      </TouchableOpacity>
+                      <Text style={styles.savedVehicleNumber}>{vehicle.number}</Text>
+                    </View>
+                    <TouchableOpacity
+                      style={styles.deleteVehicleBtn}
+                      onPress={() => removeVehicle(vehicle.id)}
+                    >
+                      <Trash2 size={18} color="#ff4444" />
+                    </TouchableOpacity>
+                  </View>
+                ))}
               </>
             )}
           </View>
@@ -837,7 +837,7 @@ const openGallery = () => {
               />
 
               <Text style={styles.inputLabel}>Vehicle Type *</Text>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.dropdownField}
                 onPress={() => setVehicleTypeDropdownVisible(!vehicleTypeDropdownVisible)}
               >
@@ -849,7 +849,7 @@ const openGallery = () => {
 
               {vehicleTypeDropdownVisible && (
                 <View style={styles.vehicleTypeDropdownList}>
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     style={styles.vehicleTypeOption}
                     onPress={() => {
                       setVehicleType("2 Wheeler");
@@ -861,7 +861,7 @@ const openGallery = () => {
                       <Text style={styles.checkMark}>✓</Text>
                     )}
                   </TouchableOpacity>
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     style={styles.vehicleTypeOption}
                     onPress={() => {
                       setVehicleType("4 Wheeler");
@@ -879,7 +879,7 @@ const openGallery = () => {
               {vehicleType === "4 Wheeler" && (
                 <>
                   <Text style={styles.inputLabel}>Fastag Banking Partner</Text>
-                  <TouchableOpacity 
+                  <TouchableOpacity
                     style={styles.dropdownField}
                     onPress={() => setBankDropdownVisible(!bankDropdownVisible)}
                   >
@@ -930,9 +930,9 @@ const openGallery = () => {
           </View>
         </View>
       </Modal>
-    </ScrollView>
-  );
-};
+    </View>
+  </View>
+);}
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#FFF",padding:15 },

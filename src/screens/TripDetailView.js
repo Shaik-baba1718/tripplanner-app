@@ -753,7 +753,23 @@ const TripDetailView = ({ route, navigation }) => {
 >
   <Text style={styles.addFriendText}>+ Add Friend</Text>
 </TouchableOpacity> 
-                    <TouchableOpacity style={styles.settleUp} onPress={() => setShowSettleModal(true)}>
+                    <TouchableOpacity style={styles.settleUp}  onPress={() => {
+
+  const friendData = {
+    id: Date.now(),
+    name: friendName,
+    lent: friendLent,
+    borrowed: friendBorrowed,
+  };
+
+  setFriendsList(prev => [
+  ...prev,
+  friendData
+  ]);
+
+  setShowSettleModal(true);
+
+}}>
                       <Text style={styles.settleUpT}>Settle up</Text>
                     </TouchableOpacity>
                   </View>
@@ -934,21 +950,99 @@ const TripDetailView = ({ route, navigation }) => {
 
         <Modal animationType="none" transparent visible={showSettleModal} onRequestClose={() => setShowSettleModal(false)}>
           <View style={styles.modalOverlay}>
-            <Animated.View style={[styles.settleModalContent, { transform: [{ translateY: modalTranslateY }] }]} {...settlePanResponder.panHandlers}>
+            <Animated.View style={[styles.settleModalContent, { transform: [{ translateY: modalTranslateY }] }]} >
               <View style={styles.dragHandleContainer}><View style={styles.dragHandle} /></View>
               <View style={styles.settleModalHeader}>
                 <Text style={styles.settleModalTitle}>Settle Up</Text>
                 <TouchableOpacity onPress={() => setShowSettleModal(false)}><X size={24} color="#333" /></TouchableOpacity>
               </View>
-              <ScrollView showsVerticalScrollIndicator={false}>
+              <ScrollView showsVerticalScrollIndicator={false}   nestedScrollEnabled={true}  keyboardShouldPersistTaps="handled" contentContainerStyle={{
+                                      
+                                             flexGrow: 1,
+                                               }}
+                                                >
                 <View style={styles.settleTotalCard}><Wallet size={24} color="#ED8701" /><Text style={styles.settleTotalLabel}>Total to Pay</Text><Text style={styles.settleTotalAmount}>₹2,800</Text></View>
                 <Text style={styles.settleSectionTitle}>Select Friend</Text>
-                {friendsData.map(friend => (
-                  <TouchableOpacity key={friend.id} style={[styles.settleFriendItem, selectedFriend?.id === friend.id && styles.settleSelectedFriend]} onPress={() => setSelectedFriend(friend)}>
-                    <View><Text style={styles.settleFriendName}>{friend.name}</Text><Text style={styles.settleFriendAmount}>{friend.type === 'lent' ? 'You lent' : 'You borrowed'} ₹{friend.amount}</Text></View>
-                    {selectedFriend?.id === friend.id && <UserCheck size={20} color="#4CAF50" />}
-                  </TouchableOpacity>
-                ))}
+                                                               {friendsList.map(friend => (
+
+  <TouchableOpacity
+    key={friend.id}
+    onPress={() => setSelectedFriend(friend)}
+     style={{
+    backgroundColor:
+      selectedFriend?.id === friend.id
+        ? "#E8F5E9"
+        : "#fff",
+
+    padding: 15,
+    borderRadius: 12,
+    marginTop: 10,
+    marginHorizontal: 15,
+
+    flexDirection: "column",
+    justifyContent: "space-between",
+    alignItems: "center",
+
+    borderWidth:
+      selectedFriend?.id === friend.id
+        ? 2
+        : 0,
+
+    borderColor: "#4CAF50",
+  }}
+  >
+
+    <Text
+      style={{
+        fontSize: 18,
+        fontWeight: "bold",
+        color: "#000",
+        marginBottom: 10,
+      }}
+    >
+      {friend.name}
+    </Text>
+
+    <Text
+      style={{
+        fontSize: 15,
+        color: "#4CAF50",
+        marginBottom: 5,
+      }}
+    >
+      You Lent ₹{friend.lent}
+    </Text>
+
+    <Text
+      style={{
+        fontSize: 15,
+        color: "#FF5722",
+      }}
+    >
+      You Borrowed ₹{friend.borrowed}
+    </Text>
+    <TouchableOpacity
+      onPress={() => {
+
+        setFriendsList(prev =>
+          prev.filter(
+            item => item.id !== friend.id
+          )
+        );
+
+      }}
+      style={{
+        marginLeft: 10,
+      }}
+    >
+      <Trash2
+        size={22}
+        color="red"
+      />
+    </TouchableOpacity>
+  </TouchableOpacity>
+
+))}
                 <Text style={styles.settleSectionTitle}>Enter Amount</Text>
                 <View style={styles.settleAmountContainer}><Text style={styles.settleCurrencySymbol}>₹</Text><TextInput style={styles.settleAmountInput} placeholder="0" placeholderTextColor="#999" keyboardType="numeric" value={settleAmount} onChangeText={setSettleAmount} /></View>
                 <Text style={styles.settleSectionTitle}>Payment Method</Text>
@@ -959,9 +1053,52 @@ const TripDetailView = ({ route, navigation }) => {
                     </TouchableOpacity>
                   ))}
                 </View>
-                <TouchableOpacity style={styles.settleProceedButton} onPress={() => { if (!selectedFriend) { Alert.alert('Please select a friend'); return; } if (!settleAmount || parseFloat(settleAmount) <= 0) { Alert.alert('Please enter a valid amount'); return; } Alert.alert(`Payment of ₹${settleAmount} sent to ${selectedFriend.name}`); setShowSettleModal(false); setSelectedFriend(null); setSettleAmount(''); }}>
-                  <Text style={styles.settleProceedText}>Proceed to Pay</Text>
-                </TouchableOpacity>
+<TouchableOpacity
+  style={styles.settleProceedButton}
+
+  onPress={() => {
+
+    if (
+     
+      Number(settleAmount) < 0
+    ) {
+      return;
+    }
+
+    setFriendsList(prev =>
+      prev.map(friend => {
+
+        if (
+          friend.id === selectedFriend.id
+        ) {
+
+          return {
+            ...friend,
+
+            borrowed:
+              Number(friend.borrowed || 0)
+              + Number(settleAmount)
+          };
+        }
+
+        return friend;
+      })
+    );
+
+    setSettleAmount("");
+
+    setSelectedFriend(null);
+
+    setShowSettleModal(true);
+
+  }}
+>
+
+  <Text style={styles.settleProceedText}>
+    Proceed to Pay
+  </Text>
+
+</TouchableOpacity>
               </ScrollView>
             </Animated.View>
           </View>
@@ -1351,23 +1488,15 @@ const TripDetailView = ({ route, navigation }) => {
       {editingFriend && (
         <TouchableOpacity 
           style={[styles.modalButton, { backgroundColor: '#EF4020', marginTop: 10 }]}
-          onPress={() => {
-            Alert.alert(
-              'Delete Friend',
-              `Delete ${friendName}?`,
-              [
-                { text: 'Cancel', style: 'cancel' },
-                { 
-                  text: 'Delete', 
-                  onPress: () => {
-                    setFriendsList(friendsList.filter(f => f.id !== editingFriend.id));
-                    setShowFriendModal(false);
-                  },
-                  style: 'destructive'
-                }
-              ]
-            );
-          }}
+        onPress={() => {
+                      setFriendsList(
+                             friendsList.filter(
+                                    f => f.id !== editingFriend.id
+                                                    )
+                                                       );
+
+                                                  setShowFriendModal(false);
+                                                            }}
         >
           <Text style={styles.modalButtonText}>Delete Friend</Text>
         </TouchableOpacity>
@@ -1627,10 +1756,42 @@ const styles = StyleSheet.create({
   gd: { fontSize: textScale(10), fontFamily: FONTS.MetropolicBold, letterSpacing: 2, color: 'rgba(52, 22, 73, 0.8)' },
   id: { width: '100%', height: verticalScale(150), borderRadius: 10 },
   sg: { fontSize: textScale(12), fontFamily: FONTS.MetropolicSemibold, color: '#ED8701' },
-  expenseSubTabsContainer: { flexDirection: 'row', marginTop: 20, marginBottom: 10, borderWidth: 1, backgroundColor: '#FFF', borderRadius: 8, borderColor: '#F1F1F5', width: moderateScale(300), alignSelf: 'center' },
-  expenseSubTabButton: { flex: 1, alignItems: 'center', justifyContent: 'center'},
-  expenseSubTabText: { fontSize: textScale(12), fontFamily: FONTS.MetropolicMedium, letterSpacing: 0.2, color: 'rgba(105, 105, 116, 1)' },
-  activeExpenseSubTabText: { color: '#FFF', backgroundColor: '#de8f27', borderRadius: 8, paddingHorizontal: 18, paddingVertical: 6 },
+  expenseSubTabsContainer: {
+  flexDirection: 'row',
+  marginTop: 20,
+  marginBottom: 10,
+  backgroundColor: '#fff',
+  borderRadius: 10,
+  width: moderateScale(280),
+  alignSelf: 'center',
+  height: verticalScale(40),
+  alignItems: 'center',
+  borderWidth:0.7,
+  borderColor:"#333131"
+ 
+},
+expenseSubTabButton: {
+  flex: 1,
+ 
+  alignItems: 'center',
+
+},
+expenseSubTabText: {
+  fontSize: textScale(12),
+  fontFamily: FONTS.MetropolicMedium,
+  letterSpacing: 0.2,
+  color: 'rgba(105, 105, 116, 1)',
+},
+activeExpenseSubTabText: {
+  color: '#FFF',
+  backgroundColor: '#de8f27',
+  borderRadius: 10,
+  width: moderateScale(90),
+  height: verticalScale(34),
+  textAlign: 'center',
+   textAlignVertical:'center'
+ 
+},
   expenseR: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF', borderRadius: 12, padding: 10, marginBottom: 12, borderBottomWidth: 1, borderBottomColor: '#EFEFEF' },
   expenseIconContainer: { width: moderateScale(30), height: verticalScale(30), borderRadius: 100, backgroundColor: 'rgba(255, 173, 41, 0.17)', alignItems: 'center', justifyContent: 'center', marginRight: 12 },
   expenseIcon: { width: moderateScale(14), height: verticalScale(14) },
@@ -1723,7 +1884,7 @@ friendL2: {
   categoryName: { fontSize: textScale(10), fontFamily: FONTS.InterRegular, color: '#696974', letterSpacing: 0.08 },
   dragHandleContainer: { alignItems: 'center', justifyContent: 'center', paddingVertical: 10 },
   dragHandle: { width: moderateScale(40), height: 4, backgroundColor: '#DDD', borderRadius: 2 },
-  settleModalContent: { backgroundColor: '#FFF', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, maxHeight: '90%', width: '100%', position: 'absolute', bottom: 0 },
+  settleModalContent: { backgroundColor: '#FFF', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, height: '85%', width: '100%',  overflow: "hidden", },
   settleModalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, paddingBottom: 15, borderBottomWidth: 1, borderBottomColor: '#EFEFEF' },
   settleModalTitle: { fontSize: textScale(18), fontFamily: FONTS.MetropolicBold, color: '#341649' },
   settleTotalCard: { backgroundColor: '#FFF9F1', borderRadius: 16, padding: 16, alignItems: 'center', borderWidth: 1, borderColor: '#EFD8BC', marginBottom: 24 },

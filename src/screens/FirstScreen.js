@@ -12,7 +12,7 @@ import {
 import { Wallet } from "lucide-react-native";
 import { FONTS } from "../../global";
 import images from "../assets/index";
-
+import { textScale,moderateScale,verticalScale } from "../styles/responsiveSize";
 const { width, height } = Dimensions.get("window");
 
 const First = ({ navigation }) => {
@@ -32,7 +32,7 @@ const First = ({ navigation }) => {
         <Text style={styles.headerText}>My Trips</Text>
 
         <View style={styles.coinContainer}>
-          <Wallet size={18} color="#000" />
+          <Wallet size={15} color="#000" />
           <Text style={styles.coinText}>250</Text>
           <Image source={images.coins} style={styles.coinImage} resizeMode="contain" />
         </View>
@@ -62,41 +62,42 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF",
   },
   header: {
-    width: "100%",
+   
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 18,
-    paddingTop: Platform.OS === 'android' ? 40 : 50,
-    paddingBottom: 15,
+
+    padding:10,
+   
     borderBottomWidth: 1,
     borderBottomColor: "#E5E7EB",
     backgroundColor: "#FFF",
   },
   headerText: {
-    fontSize:16,
+    fontSize:textScale(14),
     color: "#111827",
     fontFamily: FONTS.Interbold,
   },
   coinContainer: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    padding:10,
     borderWidth: 1,
+    justifyContent:"space-between",
+    gap:5,
     borderColor: "#ECAE56",
     backgroundColor: "#FFF7EC",
     borderRadius: 50,
   },
   coinText: {
-    fontSize: 13,
+    fontSize: textScale(12),
     color: "#313131",
-    marginHorizontal: 5,
+  
     fontFamily: FONTS.sfprobold,
   },
   coinImage: {
-    width: 20,
-    height: 20,
+    width: moderateScale(15),
+    height: verticalScale(15),
   },
   body: {
     flex: 1,
@@ -110,15 +111,15 @@ const styles = StyleSheet.create({
   },
   title: {
     marginTop: 10,
-    fontSize: 18,
+    fontSize: textScale(14),
     color: "#111827",
     textAlign: "center",
     fontFamily: FONTS.semiBold,
   },
   button: {
-    marginTop: 20,
-    width: 150,
-    height: 52,
+    marginTop: 10,
+    width: moderateScale(120),
+    height: verticalScale(50),
     borderRadius: 15,
     backgroundColor: "#ED8701",
     flexDirection: "row",
@@ -126,12 +127,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   plus: {
-    fontSize: 22,
+    fontSize: textScale(20),
     color: "#FFF",
+      fontFamily: FONTS.sfprobold,
     marginRight: 6,
   },
   buttonText: {
-    fontSize: 16,
+    fontSize: textScale(14),
     color: "#FFF",
     fontFamily: FONTS.sfprobold,
   },

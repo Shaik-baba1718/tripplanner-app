@@ -30,5 +30,15 @@ const images= {
                 ed10:require('../assets/images/ed10.png'),
                   ed11:require('../assets/images/ed11.png'),
                   ed12:require('../assets/images/ed12.png'),
-};               
+                  ed13:require('../assets/images/ed13.webp'),
+                  ed14:require('../assets/images/ed14.webp'),
+                 ed15:require('../assets/images/ed15.webp'),
+                  ed16:require('../assets/images/ed16.webp'),
+                   ed17:require('../assets/images/ed17.webp'),
+                    ed18:require('../assets/images/ed18.webp'),
+                      ed19:require('../assets/images/ed19.webp'),
+                      Ab:require('../assets/images/Ab.webp'),
+                      Ab1:require('../assets/images/Ab1.webp'),
+                    
+};                
 export default images;

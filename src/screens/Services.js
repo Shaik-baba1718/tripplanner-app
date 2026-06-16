@@ -1,4 +1,4 @@
-import React from 'react';
+import React ,{ useState } from 'react';
 import {
   View,
   Text,
@@ -14,12 +14,14 @@ import LinearGradient from 'react-native-linear-gradient';
 import images from "../assets/index";
 import { ArrowRight } from 'lucide-react-native';
 
+
 const Services = ({ navigation }) => {
+
   return (
 
       <ScrollView showsVerticalScrollIndicator={false} style={{backgroundColor:"#FFF"}}>
          <View style={{borderWidth:0.5,borderColor:"#bfb2b2",marginTop:30}}/>
-           <SafeAreaView style={styles.container}>
+           <View style={styles.container}>
         {/* Card 1 - Plan your trip */}
         <View style={[styles.cardWrapper,{marginTop:20}]}>
           <LinearGradient
@@ -37,7 +39,7 @@ const Services = ({ navigation }) => {
                 <Text style={styles.mainTitle}>Plan your trip</Text>
                 <Text style={styles.subTitle}>with ease.</Text>
                 <TouchableOpacity 
-                  onPress={() => navigation.navigate("Home")} 
+                  onPress={() => navigation.navigate("Trips")} 
                   style={styles.tryNowButton}
                 >
                   <Text style={styles.tryNowText}>Try now</Text>
@@ -81,7 +83,7 @@ const Services = ({ navigation }) => {
             end={{ x: 0, y: 0.25 }}
             style={styles.cardGradient}
           >
-            <TouchableOpacity style={styles.cardContent} activeOpacity={0.9}>
+            <TouchableOpacity style={styles.cardContent} activeOpacity={0.9} >
               <View style={styles.leftSection}>
                 <View style={styles.alertRow1}>
                 
@@ -113,7 +115,7 @@ const Services = ({ navigation }) => {
             </TouchableOpacity>
           </LinearGradient>
         </View>
-       </SafeAreaView>
+       </View>
       </ScrollView>
    
   );

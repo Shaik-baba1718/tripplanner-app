@@ -66,9 +66,21 @@ useEffect(() => {
   loadProfileData();
 
 }, []);
+const removeAccount = () => {
+  handleDeleteAccount();
+};
+const handleDeleteAccount = async () => {
+  try {
+    await AsyncStorage.clear();
+    setProfileData(null);
+   
+  } catch (error) {
+    console.log('Error removing account:', error);
+  }
+};
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       {/* Header with Gradient Background */}
       <LinearGradient
         colors={['#ED8701', '#FF6B00']}
@@ -145,11 +157,11 @@ useEffect(() => {
           <MenuItem
             icon={<Trash2 size={20} color="#ED8701" />}
             title="Remove My Account"
-            onPress={() => {}}
+            onPress={removeAccount}
           />
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 };
 

@@ -21,6 +21,7 @@ import PayBills from "../screens/PayBills"
 import FastTag from "../Bills/FastTag"
 import DTH from "../Bills/DTH"
 import Insurance from "../Bills/Insurance"
+import DashBoard from "../screens/DashBoardScreen";
 const Stack =
   createNativeStackNavigator();
 
@@ -34,6 +35,7 @@ const AppNavigator=()=> {
         }}
 
       >
+       
 
 
       
